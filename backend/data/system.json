@@ -1,0 +1,394 @@
+{
+  "system": {
+    "name": "API Failure Twin",
+    "environment": "simulation",
+    "version": "1.0.0",
+    "description": "Deterministic visual dependency simulator for software systems"
+  },
+  "services": [
+    {
+      "id": "user",
+      "name": "User Client",
+      "type": "client",
+      "criticality": "high",
+      "initialState": "HEALTHY",
+      "tier": 0,
+      "description": "End-user web application and mobile clients"
+    },
+    {
+      "id": "api-gateway",
+      "name": "API Gateway",
+      "type": "gateway",
+      "criticality": "critical",
+      "initialState": "HEALTHY",
+      "tier": 1,
+      "description": "Ingress reverse proxy, SSL termination, and routing"
+    },
+    {
+      "id": "auth-service",
+      "name": "Auth Service",
+      "type": "internal-service",
+      "criticality": "critical",
+      "initialState": "HEALTHY",
+      "tier": 2,
+      "description": "Session token verification and OAuth token issuance"
+    },
+    {
+      "id": "order-service",
+      "name": "Order Service",
+      "type": "internal-service",
+      "criticality": "high",
+      "initialState": "HEALTHY",
+      "tier": 2,
+      "description": "Cart management, order lifecycle, and fulfillment coordination"
+    },
+    {
+      "id": "location-service",
+      "name": "Location Service",
+      "type": "internal-service",
+      "criticality": "medium",
+      "initialState": "HEALTHY",
+      "tier": 2,
+      "description": "Geocoding, delivery radius estimation, and store routing"
+    },
+    {
+      "id": "payment-service",
+      "name": "Payment Service",
+      "type": "internal-service",
+      "criticality": "critical",
+      "initialState": "HEALTHY",
+      "tier": 3,
+      "description": "Transaction tokenization, settlement, and provider routing"
+    },
+    {
+      "id": "notification-service",
+      "name": "Notification Service",
+      "type": "internal-service",
+      "criticality": "low",
+      "initialState": "HEALTHY",
+      "tier": 3,
+      "description": "Email, SMS, and push notification dispatcher"
+    },
+    {
+      "id": "payment-api",
+      "name": "Payment API",
+      "type": "external-api",
+      "criticality": "critical",
+      "initialState": "HEALTHY",
+      "tier": 4,
+      "description": "Third-party payment acquirer banking gateway"
+    },
+    {
+      "id": "maps-api",
+      "name": "Maps API",
+      "type": "external-api",
+      "criticality": "medium",
+      "initialState": "HEALTHY",
+      "tier": 3,
+      "description": "Third-party geospatial map rendering and route calculation"
+    },
+    {
+      "id": "database",
+      "name": "Primary Database",
+      "type": "database",
+      "criticality": "critical",
+      "initialState": "HEALTHY",
+      "tier": 3,
+      "description": "Transactional relational datastore for orders, users, and ledger"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "user",
+      "target": "api-gateway",
+      "critical": true,
+      "protocol": "HTTPS"
+    },
+    {
+      "source": "api-gateway",
+      "target": "auth-service",
+      "critical": true,
+      "protocol": "gRPC"
+    },
+    {
+      "source": "api-gateway",
+      "target": "order-service",
+      "critical": true,
+      "protocol": "HTTP/REST"
+    },
+    {
+      "source": "api-gateway",
+      "target": "location-service",
+      "critical": false,
+      "protocol": "HTTP/REST"
+    },
+    {
+      "source": "auth-service",
+      "target": "database",
+      "critical": true,
+      "protocol": "TCP"
+    },
+    {
+      "source": "order-service",
+      "target": "payment-service",
+      "critical": true,
+      "protocol": "HTTP/REST"
+    },
+    {
+      "source": "order-service",
+      "target": "database",
+      "critical": true,
+      "protocol": "TCP"
+    },
+    {
+      "source": "order-service",
+      "target": "notification-service",
+      "critical": false,
+      "protocol": "AMQP/Queue"
+    },
+    {
+      "source": "payment-service",
+      "target": "payment-api",
+      "critical": true,
+      "protocol": "HTTPS"
+    },
+    {
+      "source": "location-service",
+      "target": "maps-api",
+      "critical": true,
+      "protocol": "HTTPS"
+    }
+  ],
+  "features": [
+    {
+      "id": "checkout",
+      "name": "Checkout Flow",
+      "criticality": "critical",
+      "dependsOn": [
+        "order-service",
+        "payment-service"
+      ],
+      "description": "User completion of cart checkout and order submission"
+    },
+    {
+      "id": "payment-processing",
+      "name": "Payment Processing",
+      "criticality": "critical",
+      "dependsOn": [
+        "payment-service",
+        "payment-api"
+      ],
+      "description": "Direct credit card authorization and settlement"
+    },
+    {
+      "id": "order-placement",
+      "name": "Order Placement",
+      "criticality": "high",
+      "dependsOn": [
+        "order-service",
+        "payment-service",
+        "database"
+      ],
+      "description": "Order creation, inventory allocation, and database commit"
+    },
+    {
+      "id": "order-tracking",
+      "name": "Order Tracking",
+      "criticality": "medium",
+      "dependsOn": [
+        "order-service",
+        "location-service"
+      ],
+      "description": "Real-time delivery courier map tracking and status updates"
+    },
+    {
+      "id": "user-login",
+      "name": "User Login",
+      "criticality": "critical",
+      "dependsOn": [
+        "auth-service",
+        "database"
+      ],
+      "description": "User credential authentication and JWT session creation"
+    },
+    {
+      "id": "notifications",
+      "name": "Push & Email Notifications",
+      "criticality": "low",
+      "dependsOn": [
+        "notification-service"
+      ],
+      "description": "Async dispatch of receipts and status notifications"
+    },
+    {
+      "id": "location-tracking",
+      "name": "Store & Address Geocoding",
+      "criticality": "medium",
+      "dependsOn": [
+        "location-service",
+        "maps-api"
+      ],
+      "description": "Address validation, geo-lookup, and map tile rendering"
+    }
+  ],
+  "failureTypes": [
+    {
+      "id": "HTTP 500",
+      "name": "HTTP 500",
+      "category": "server-error",
+      "code": "500",
+      "description": "Upstream internal server crash or unhandled exception response"
+    },
+    {
+      "id": "HTTP 429",
+      "name": "HTTP 429",
+      "category": "rate-limit",
+      "code": "429",
+      "description": "Rate quota exceeded; upstream rejects requests with 429 Too Many Requests"
+    },
+    {
+      "id": "TIMEOUT",
+      "name": "TIMEOUT",
+      "category": "connectivity",
+      "code": "504",
+      "description": "Upstream socket timeout or gateway response deadline exceeded (>30s)"
+    },
+    {
+      "id": "HIGH LATENCY",
+      "name": "HIGH LATENCY",
+      "category": "performance",
+      "code": "LATENCY_SPIKE",
+      "description": "Extreme roundtrip response latency spike (>5000ms), exhausting client connection pool"
+    },
+    {
+      "id": "SCHEMA MISMATCH",
+      "name": "SCHEMA MISMATCH",
+      "category": "contract",
+      "code": "CONTRACT_BREAK",
+      "description": "Upstream returns unannounced payload schema drift or missing mandatory JSON keys"
+    }
+  ],
+  "mitigations": [
+    {
+      "id": "fallback-provider",
+      "failureType": "HTTP 500",
+      "name": "Fallback Secondary Provider",
+      "strategy": "Circuit trip and switch to secondary redundant gateway",
+      "description": "Automatically route payment requests through secondary backup provider when primary returns consecutive 500s.",
+      "effectiveness": "high",
+      "recoversFeatures": ["checkout", "payment-processing", "order-placement"],
+      "recoversServices": ["payment-service", "order-service", "api-gateway", "user"],
+      "degradedServices": ["payment-service"]
+    },
+    {
+      "id": "retry-backoff",
+      "failureType": "HTTP 500",
+      "name": "Retry with Exponential Backoff & Jitter",
+      "strategy": "Exponential backoff retry with full jitter",
+      "description": "Retry transient 500 failures 3 times with exponential backoff (100ms, 200ms, 400ms) and random jitter.",
+      "effectiveness": "medium",
+      "recoversFeatures": ["order-placement"],
+      "recoversServices": ["order-service"],
+      "degradedServices": ["payment-service", "payment-api"]
+    },
+    {
+      "id": "queue-failed-requests",
+      "failureType": "HTTP 500",
+      "name": "Dead Letter Queue & Asynchronous Retry",
+      "strategy": "Buffer failed requests into durable queue",
+      "description": "Safely buffer failed requests into durable message queue for delayed idempotent replay.",
+      "effectiveness": "medium",
+      "recoversFeatures": ["order-placement"],
+      "recoversServices": ["order-service"],
+      "degradedServices": ["payment-service"]
+    },
+    {
+      "id": "rate-limit-backoff",
+      "failureType": "HTTP 429",
+      "name": "Retry-After Honor & Client Token Bucket",
+      "strategy": "Honor upstream Retry-After and throttle client emission",
+      "description": "Inspect HTTP Retry-After response header and throttle outbound request rate via local token bucket.",
+      "effectiveness": "high",
+      "recoversFeatures": ["checkout", "payment-processing", "location-tracking"],
+      "recoversServices": ["payment-service", "location-service", "order-service"],
+      "degradedServices": ["payment-service", "location-service"]
+    },
+    {
+      "id": "request-queue",
+      "failureType": "HTTP 429",
+      "name": "Asynchronous Batch Request Queue",
+      "strategy": "Queue requests into batch buffer",
+      "description": "Hold non-urgent requests in queue and smooth out burst spikes below provider rate threshold.",
+      "effectiveness": "medium",
+      "recoversFeatures": ["checkout", "order-placement"],
+      "recoversServices": ["order-service", "payment-service"],
+      "degradedServices": ["payment-service"]
+    },
+    {
+      "id": "timeout-policy",
+      "failureType": "TIMEOUT",
+      "name": "Strict Timeout SLA & Circuit Breaker",
+      "strategy": "Fail-fast timeout (1500ms) with circuit breaker",
+      "description": "Clamp socket timeout to 1500ms. If 3 timeouts occur in 10s, trip circuit breaker and return cached/fallback response.",
+      "effectiveness": "high",
+      "recoversFeatures": ["checkout", "order-tracking", "location-tracking"],
+      "recoversServices": ["order-service", "location-service", "api-gateway", "user"],
+      "degradedServices": ["payment-service", "location-service"]
+    },
+    {
+      "id": "async-fallback",
+      "failureType": "TIMEOUT",
+      "name": "Asynchronous Degraded Mode",
+      "strategy": "Acknowledge receipt immediately and process asynchronously",
+      "description": "Return optimistic HTTP 202 Accepted to user client and dispatch work to asynchronous background job.",
+      "effectiveness": "high",
+      "recoversFeatures": ["checkout", "order-placement"],
+      "recoversServices": ["order-service", "api-gateway", "user"],
+      "degradedServices": ["payment-service"]
+    },
+    {
+      "id": "aggressive-cache",
+      "failureType": "HIGH LATENCY",
+      "name": "Stale-While-Revalidate Cache Layer",
+      "strategy": "Serve cached responses to decouple latency",
+      "description": "Immediately return cached data with background asynchronous refresh, isolating upstream latency spikes.",
+      "effectiveness": "high",
+      "recoversFeatures": ["location-tracking", "order-tracking"],
+      "recoversServices": ["location-service", "api-gateway", "user"],
+      "degradedServices": ["location-service", "maps-api"]
+    },
+    {
+      "id": "latency-timeout-fallback",
+      "failureType": "HIGH LATENCY",
+      "name": "Latency Cap with Graceful Degradation",
+      "strategy": "Hard 800ms latency ceiling with fallback default",
+      "description": "Enforce strict 800ms ceiling. Return graceful default values or cached fallbacks if upstream exceeds threshold.",
+      "effectiveness": "medium",
+      "recoversFeatures": ["checkout", "order-tracking"],
+      "recoversServices": ["order-service", "location-service"],
+      "degradedServices": ["payment-service"]
+    },
+    {
+      "id": "schema-validation-adapter",
+      "failureType": "SCHEMA MISMATCH",
+      "name": "Tolerant Reader & Schema Adapter Layer",
+      "strategy": "Apply defensive parsing and default missing fields",
+      "description": "Parse payload with tolerant reader pattern. Discard unmapped fields and inject default schema values for missing keys.",
+      "effectiveness": "high",
+      "recoversFeatures": ["checkout", "payment-processing", "location-tracking"],
+      "recoversServices": ["payment-service", "location-service", "order-service"],
+      "degradedServices": ["payment-service", "location-service"]
+    },
+    {
+      "id": "api-version-fallback",
+      "failureType": "SCHEMA MISMATCH",
+      "name": "API Version Header Fallback",
+      "strategy": "Downgrade API version header to stable contract",
+      "description": "Automatically negotiate previous stable API version header (e.g. 2024-03-01) on payload deserialization error.",
+      "effectiveness": "high",
+      "recoversFeatures": ["checkout", "payment-processing", "order-placement"],
+      "recoversServices": ["payment-service", "order-service", "api-gateway", "user"],
+      "degradedServices": ["payment-service"]
+    }
+  ]
+}

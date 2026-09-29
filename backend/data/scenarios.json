@@ -1,0 +1,52 @@
+[
+  {
+    "id": "scenario-payment-500",
+    "name": "Payment Gateway 500 Crash (Primary Demo)",
+    "description": "Simulate external Payment API returning HTTP 500 internal server error. Observe downstream blast radius affecting Payment Service, Order Service, and Checkout Flow.",
+    "targetService": "payment-api",
+    "failureType": "HTTP 500",
+    "severity": "CRITICAL",
+    "duration": 10,
+    "recommendedMitigationId": "fallback-provider"
+  },
+  {
+    "id": "scenario-maps-timeout",
+    "name": "Geospatial Maps API Gateway Timeout",
+    "description": "Third-party Maps API experiences socket timeouts (>30s). Location Service degrades, impacting order map tracking and geocoding.",
+    "targetService": "maps-api",
+    "failureType": "TIMEOUT",
+    "severity": "HIGH",
+    "duration": 30,
+    "recommendedMitigationId": "aggressive-cache"
+  },
+  {
+    "id": "scenario-payment-429",
+    "name": "Acquirer Rate-Limit Spike (HTTP 429)",
+    "description": "Payment API rate limits exceed allowed requests per second, returning HTTP 429. Payment Service chokes without client token throttling.",
+    "targetService": "payment-api",
+    "failureType": "HTTP 429",
+    "severity": "HIGH",
+    "duration": 10,
+    "recommendedMitigationId": "rate-limit-backoff"
+  },
+  {
+    "id": "scenario-maps-schema",
+    "name": "Maps API Breaking Schema Drift",
+    "description": "Maps API releases unannounced breaking change to lat/lng payload format. Location Service throws deserialization errors.",
+    "targetService": "maps-api",
+    "failureType": "SCHEMA MISMATCH",
+    "severity": "MEDIUM",
+    "duration": 60,
+    "recommendedMitigationId": "schema-validation-adapter"
+  },
+  {
+    "id": "scenario-db-latency",
+    "name": "Primary Database Latency Degradation",
+    "description": "Database queries experience heavy lock contention with 6000ms latency spikes, affecting authentication and order creation.",
+    "targetService": "database",
+    "failureType": "HIGH LATENCY",
+    "severity": "CRITICAL",
+    "duration": 30,
+    "recommendedMitigationId": "latency-timeout-fallback"
+  }
+]

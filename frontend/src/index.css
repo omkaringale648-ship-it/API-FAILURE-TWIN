@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-sim-bg text-sim-text font-sans selection:bg-blue-600 selection:text-white;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0F17;
+}
+::-webkit-scrollbar-thumb {
+  background: #1F2E45;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2D3F5D;
+}
+
+/* ReactFlow Dark Theme Overrides */
+.react-flow {
+  background-color: #0B0F17 !important;
+}
+
+.react-flow__controls {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid #1F2E45 !important;
+  border-radius: 4px !important;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background-color: #111827 !important;
+  border-bottom: 1px solid #1F2E45 !important;
+  fill: #94A3B8 !important;
+  color: #94A3B8 !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: #161F30 !important;
+  fill: #E2E8F0 !important;
+  color: #E2E8F0 !important;
+}
+
+.react-flow__minimap {
+  background-color: #111827 !important;
+  border: 1px solid #1F2E45 !important;
+  border-radius: 4px !important;
+}
+
+/* Propagation animated dash stroke */
+@keyframes dash-flow {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.edge-propagating path {
+  stroke: #EF4444 !important;
+  stroke-width: 2.5px !important;
+  stroke-dasharray: 6 3 !important;
+  animation: dash-flow 0.8s linear infinite !important;
+}
